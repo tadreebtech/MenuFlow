@@ -1,8 +1,8 @@
 # MenuFlow
 
-MenuFlow is a React application for clear, approachable menu management. This
-repository currently contains the US1.1 application foundation: the core page
-structure, responsive layout, and visual design system.
+MenuFlow is a responsive React application for clear, approachable menu
+management. The MVP supports menu summaries, search and category filtering,
+adding and editing items, availability updates, and confirmed deletion.
 
 ## Getting started
 
