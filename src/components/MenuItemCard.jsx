@@ -3,7 +3,7 @@ const priceFormatter = new Intl.NumberFormat('en-US', {
   currency: 'USD',
 })
 
-function MenuItemCard({ item }) {
+function MenuItemCard({ item, onEdit }) {
   return (
     <article className="menu-item-card">
       <div className="menu-item-heading">
@@ -17,7 +17,17 @@ function MenuItemCard({ item }) {
 
       <h3>{item.name}</h3>
       <p className="menu-item-description">{item.description}</p>
-      <p className="menu-item-price">{priceFormatter.format(item.price)}</p>
+      <div className="menu-item-footer">
+        <p className="menu-item-price">{priceFormatter.format(item.price)}</p>
+        <button
+          className="button button-secondary button-compact"
+          type="button"
+          onClick={() => onEdit(item.id)}
+          aria-label={`Edit ${item.name}`}
+        >
+          Edit
+        </button>
+      </div>
     </article>
   )
 }

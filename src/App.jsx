@@ -1,11 +1,27 @@
 import { useState } from 'react'
 import './App.css'
+import MenuItemForm from './components/MenuItemForm.jsx'
 import MenuList from './components/MenuList.jsx'
-import menuItems from './data/menuItems.js'
+import initialMenuItems from './data/menuItems.js'
+
+function createMenuItemId() {
+  if (globalThis.crypto?.randomUUID) {
+    return globalThis.crypto.randomUUID()
+  }
+
+  return `menu-item-${Date.now()}-${Math.random().toString(36).slice(2)}`
+}
 
 function App() {
+  const [menuItems, setMenuItems] = useState(initialMenuItems)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('All')
+  const [isFormOpen, setIsFormOpen] = useState(false)
+  const [editingItemId, setEditingItemId] = useState(null)
+  const [feedback, setFeedback] = useState('')
+
+  const editingItem =
+    menuItems.find((item) => item.id === editingItemId) ?? null
 
   const availableItemCount = menuItems.filter((item) => item.available).length
   const categories = [...new Set(menuItems.map((item) => item.category))]
@@ -23,6 +39,40 @@ function App() {
     { label: 'Menu items', value: menuItems.length },
     { label: 'Available items', value: availableItemCount },
   ]
+
+  const openAddForm = () => {
+    setEditingItemId(null)
+    setIsFormOpen(true)
+    setFeedback('')
+  }
+
+  const openEditForm = (itemId) => {
+    setEditingItemId(itemId)
+    setIsFormOpen(true)
+    setFeedback('')
+  }
+
+  const closeForm = () => {
+    setEditingItemId(null)
+    setIsFormOpen(false)
+  }
+
+  const handleFormSubmit = (itemValues) => {
+    if (editingItem) {
+      setMenuItems((currentItems) =>
+        currentItems.map((item) =>
+          item.id === editingItem.id ? { ...item, ...itemValues } : item,
+        ),
+      )
+      setFeedback(`“${itemValues.name}” was updated successfully.`)
+    } else {
+      const newItem = { id: createMenuItemId(), ...itemValues }
+      setMenuItems((currentItems) => [...currentItems, newItem])
+      setFeedback(`“${itemValues.name}” was added successfully.`)
+    }
+
+    closeForm()
+  }
 
   return (
     <div className="app-shell">
@@ -63,6 +113,34 @@ function App() {
               <p className="toolbar-kicker">Menu workspace</p>
               <h2 id="workspace-title">Menu items</h2>
             </div>
+            <div className="toolbar-actions">
+              <button
+                className="button button-primary"
+                type="button"
+                onClick={openAddForm}
+              >
+                Add item
+              </button>
+            </div>
+          </header>
+
+          {feedback && (
+            <p className="success-feedback" role="status">
+              {feedback}
+            </p>
+          )}
+
+          {isFormOpen && (
+            <MenuItemForm
+              key={editingItem?.id ?? 'add-item'}
+              item={editingItem}
+              categories={categories}
+              onSubmit={handleFormSubmit}
+              onCancel={closeForm}
+            />
+          )}
+
+          <div className="filter-bar">
             <div className="toolbar-controls">
               <label className="filter-control search-control">
                 <span>Search menu</span>
@@ -89,10 +167,10 @@ function App() {
                 </select>
               </label>
             </div>
-          </header>
+          </div>
 
           <div className="content-panel">
-            <MenuList items={visibleItems} />
+            <MenuList items={visibleItems} onEdit={openEditForm} />
           </div>
         </section>
       </main>
