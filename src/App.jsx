@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import './App.css'
 import MenuItemForm from './components/MenuItemForm.jsx'
 import MenuList from './components/MenuList.jsx'
@@ -19,6 +19,7 @@ function App() {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingItemId, setEditingItemId] = useState(null)
   const [feedback, setFeedback] = useState('')
+  const formTriggerRef = useRef(null)
 
   const editingItem =
     menuItems.find((item) => item.id === editingItemId) ?? null
@@ -43,14 +44,20 @@ function App() {
     { label: 'Menu items', value: menuItems.length },
     { label: 'Available items', value: availableItemCount },
   ]
+  const emptyStateMessage =
+    menuItems.length === 0
+      ? 'Your menu is empty. Add an item to get started.'
+      : 'No menu items match the current search and category filters.'
 
-  const openAddForm = () => {
+  const openAddForm = (trigger) => {
+    formTriggerRef.current = trigger
     setEditingItemId(null)
     setIsFormOpen(true)
     setFeedback('')
   }
 
-  const openEditForm = (itemId) => {
+  const openEditForm = (itemId, trigger) => {
+    formTriggerRef.current = trigger
     setEditingItemId(itemId)
     setIsFormOpen(true)
     setFeedback('')
@@ -59,6 +66,13 @@ function App() {
   const closeForm = () => {
     setEditingItemId(null)
     setIsFormOpen(false)
+
+    const trigger = formTriggerRef.current
+    requestAnimationFrame(() => {
+      if (trigger?.isConnected) {
+        trigger.focus()
+      }
+    })
   }
 
   const handleFormSubmit = (itemValues) => {
@@ -156,7 +170,9 @@ function App() {
               <button
                 className="button button-primary"
                 type="button"
-                onClick={openAddForm}
+                onClick={(event) => openAddForm(event.currentTarget)}
+                aria-expanded={isFormOpen && !editingItem}
+                aria-controls="menu-item-form-panel"
               >
                 Add item
               </button>
@@ -179,7 +195,7 @@ function App() {
             />
           )}
 
-          <div className="filter-bar">
+          <div className="filter-bar" role="search" aria-label="Filter menu items">
             <div className="toolbar-controls">
               <label className="filter-control search-control">
                 <span>Search menu</span>
@@ -211,6 +227,7 @@ function App() {
           <div className="content-panel">
             <MenuList
               items={visibleItems}
+              emptyStateMessage={emptyStateMessage}
               onEdit={openEditForm}
               onToggleAvailability={handleAvailabilityChange}
               onDelete={handleDeleteItem}

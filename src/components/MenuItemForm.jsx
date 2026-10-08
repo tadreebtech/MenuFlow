@@ -47,6 +47,7 @@ function MenuItemForm({ item, categories, onSubmit, onCancel }) {
   const isEditMode = Boolean(item)
   const [values, setValues] = useState(() => getInitialValues(item))
   const [errors, setErrors] = useState({})
+  const formRef = useRef(null)
   const formPanelRef = useRef(null)
   const nameInputRef = useRef(null)
 
@@ -78,6 +79,8 @@ function MenuItemForm({ item, categories, onSubmit, onCancel }) {
     setErrors(nextErrors)
 
     if (Object.keys(nextErrors).length > 0) {
+      const firstInvalidField = Object.keys(nextErrors)[0]
+      formRef.current?.elements.namedItem(firstInvalidField)?.focus()
       return
     }
 
@@ -92,6 +95,7 @@ function MenuItemForm({ item, categories, onSubmit, onCancel }) {
 
   return (
     <section
+      id="menu-item-form-panel"
       className="menu-item-form-panel"
       ref={formPanelRef}
       aria-labelledby="item-form-title"
@@ -114,7 +118,12 @@ function MenuItemForm({ item, categories, onSubmit, onCancel }) {
         </button>
       </div>
 
-      <form className="menu-item-form" onSubmit={handleSubmit} noValidate>
+      <form
+        className="menu-item-form"
+        ref={formRef}
+        onSubmit={handleSubmit}
+        noValidate
+      >
         <label className="form-field">
           <span>
             Name <span aria-hidden="true">*</span>
@@ -122,12 +131,17 @@ function MenuItemForm({ item, categories, onSubmit, onCancel }) {
           <input
             ref={nameInputRef}
             name="name"
+            required
             value={values.name}
             onChange={handleChange}
             aria-invalid={Boolean(errors.name)}
             aria-describedby={errors.name ? 'name-error' : undefined}
           />
-          {errors.name && <small id="name-error">{errors.name}</small>}
+          {errors.name && (
+            <small id="name-error" role="alert">
+              {errors.name}
+            </small>
+          )}
         </label>
 
         <label className="form-field">
@@ -136,6 +150,7 @@ function MenuItemForm({ item, categories, onSubmit, onCancel }) {
           </span>
           <select
             name="category"
+            required
             value={values.category}
             onChange={handleChange}
             aria-invalid={Boolean(errors.category)}
@@ -149,7 +164,9 @@ function MenuItemForm({ item, categories, onSubmit, onCancel }) {
             ))}
           </select>
           {errors.category && (
-            <small id="category-error">{errors.category}</small>
+            <small id="category-error" role="alert">
+              {errors.category}
+            </small>
           )}
         </label>
 
@@ -170,6 +187,7 @@ function MenuItemForm({ item, categories, onSubmit, onCancel }) {
           <input
             name="price"
             type="number"
+            required
             min="0.01"
             step="0.01"
             value={values.price}
@@ -177,7 +195,11 @@ function MenuItemForm({ item, categories, onSubmit, onCancel }) {
             aria-invalid={Boolean(errors.price)}
             aria-describedby={errors.price ? 'price-error' : undefined}
           />
-          {errors.price && <small id="price-error">{errors.price}</small>}
+          {errors.price && (
+            <small id="price-error" role="alert">
+              {errors.price}
+            </small>
+          )}
         </label>
 
         <label className="availability-control">

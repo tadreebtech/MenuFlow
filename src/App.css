@@ -33,6 +33,13 @@
   text-decoration: none;
 }
 
+.brand:focus-visible,
+.button:focus-visible,
+.availability-control input:focus-visible {
+  outline: 3px solid #0b57d0;
+  outline-offset: 3px;
+}
+
 .brand-mark {
   display: grid;
   width: 34px;
@@ -163,11 +170,8 @@
   font-weight: 700;
   line-height: 1;
   cursor: pointer;
-}
-
-.button:focus-visible {
-  outline: 3px solid var(--color-brand-soft);
-  outline-offset: 2px;
+  text-align: center;
+  white-space: normal;
 }
 
 .button-primary {
@@ -241,6 +245,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 20px;
+  min-width: 0;
 }
 
 .form-heading h3 {
@@ -356,6 +361,7 @@
   color: var(--color-muted);
   font-size: 0.72rem;
   font-weight: 700;
+  min-width: 0;
 }
 
 .filter-control input,
@@ -374,7 +380,8 @@
 }
 
 .filter-control select {
-  min-width: 132px;
+  min-width: 0;
+  width: 132px;
   padding: 0 34px 0 12px;
 }
 
@@ -424,6 +431,7 @@
   border: 1px solid var(--color-border);
   border-radius: 14px;
   background: #fbfcfb;
+  min-width: 0;
 }
 
 .menu-item-card.is-unavailable {
@@ -436,6 +444,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  min-width: 0;
 }
 
 .menu-item-category {
@@ -445,6 +454,7 @@
   font-weight: 750;
   letter-spacing: 0.1em;
   text-transform: uppercase;
+  overflow-wrap: anywhere;
 }
 
 .availability-badge {
@@ -469,12 +479,14 @@
   margin: 22px 0 0;
   font-size: 1.18rem;
   letter-spacing: -0.025em;
+  overflow-wrap: anywhere;
 }
 
 .menu-item-description {
   margin: 10px 0 22px;
   color: var(--color-muted);
   line-height: 1.65;
+  overflow-wrap: anywhere;
 }
 
 .menu-item-footer {
@@ -491,6 +503,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  min-width: 0;
 }
 
 .menu-item-price {
@@ -513,6 +526,7 @@
   margin: 0;
   font-size: 0.84rem;
   line-height: 1.5;
+  overflow-wrap: anywhere;
 }
 
 .delete-confirmation-actions {
@@ -631,6 +645,10 @@
   }
 
   .filter-control select {
+    width: 100%;
+  }
+
+  .menu-item-actions {
     width: 100%;
   }
 

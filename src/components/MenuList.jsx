@@ -1,12 +1,14 @@
 import MenuItemCard from './MenuItemCard.jsx'
 
-function MenuList({ items, onEdit, onToggleAvailability, onDelete }) {
+function MenuList({
+  items,
+  emptyStateMessage,
+  onEdit,
+  onToggleAvailability,
+  onDelete,
+}) {
   if (items.length === 0) {
-    return (
-      <p className="menu-empty-state">
-        No menu items match the current filters.
-      </p>
-    )
+    return <p className="menu-empty-state">{emptyStateMessage}</p>
   }
 
   return (

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 
 const priceFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
@@ -7,6 +7,13 @@ const priceFormatter = new Intl.NumberFormat('en-US', {
 
 function MenuItemCard({ item, onEdit, onToggleAvailability, onDelete }) {
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false)
+  const deleteButtonRef = useRef(null)
+  const confirmationId = `delete-confirmation-${item.id}`
+
+  const cancelDelete = () => {
+    setIsConfirmingDelete(false)
+    requestAnimationFrame(() => deleteButtonRef.current?.focus())
+  }
 
   return (
     <article
@@ -39,16 +46,19 @@ function MenuItemCard({ item, onEdit, onToggleAvailability, onDelete }) {
           <button
             className="button button-secondary button-compact"
             type="button"
-            onClick={() => onEdit(item.id)}
+            onClick={(event) => onEdit(item.id, event.currentTarget)}
             aria-label={`Edit ${item.name}`}
           >
             Edit
           </button>
           <button
+            ref={deleteButtonRef}
             className="button button-danger button-compact"
             type="button"
             onClick={() => setIsConfirmingDelete(true)}
             aria-label={`Delete ${item.name}`}
+            aria-expanded={isConfirmingDelete}
+            aria-controls={confirmationId}
           >
             Delete
           </button>
@@ -57,6 +67,7 @@ function MenuItemCard({ item, onEdit, onToggleAvailability, onDelete }) {
 
       {isConfirmingDelete && (
         <div
+          id={confirmationId}
           className="delete-confirmation"
           role="alert"
           aria-label={`Confirm deletion of ${item.name}`}
@@ -68,7 +79,7 @@ function MenuItemCard({ item, onEdit, onToggleAvailability, onDelete }) {
             <button
               className="button button-secondary button-compact"
               type="button"
-              onClick={() => setIsConfirmingDelete(false)}
+              onClick={cancelDelete}
               autoFocus
             >
               Cancel
