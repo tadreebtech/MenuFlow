@@ -24,7 +24,11 @@ function App() {
     menuItems.find((item) => item.id === editingItemId) ?? null
 
   const availableItemCount = menuItems.filter((item) => item.available).length
-  const categories = [...new Set(menuItems.map((item) => item.category))]
+  const itemCategories = [...new Set(menuItems.map((item) => item.category))]
+  const categories =
+    selectedCategory !== 'All' && !itemCategories.includes(selectedCategory)
+      ? [...itemCategories, selectedCategory]
+      : itemCategories
   const normalizedSearchQuery = searchQuery.trim().toLowerCase()
   const visibleItems = menuItems.filter((item) => {
     const matchesSearch =
@@ -72,6 +76,41 @@ function App() {
     }
 
     closeForm()
+  }
+
+  const handleAvailabilityChange = (itemId, available) => {
+    const itemToUpdate = menuItems.find((item) => item.id === itemId)
+
+    if (!itemToUpdate) {
+      return
+    }
+
+    setMenuItems((currentItems) =>
+      currentItems.map((item) =>
+        item.id === itemId ? { ...item, available } : item,
+      ),
+    )
+    setFeedback(
+      `“${itemToUpdate.name}” is now ${available ? 'available' : 'unavailable'}.`,
+    )
+  }
+
+  const handleDeleteItem = (itemId) => {
+    const itemToDelete = menuItems.find((item) => item.id === itemId)
+
+    if (!itemToDelete) {
+      return
+    }
+
+    setMenuItems((currentItems) =>
+      currentItems.filter((item) => item.id !== itemId),
+    )
+
+    if (editingItemId === itemId) {
+      closeForm()
+    }
+
+    setFeedback(`“${itemToDelete.name}” was deleted successfully.`)
   }
 
   return (
@@ -170,7 +209,12 @@ function App() {
           </div>
 
           <div className="content-panel">
-            <MenuList items={visibleItems} onEdit={openEditForm} />
+            <MenuList
+              items={visibleItems}
+              onEdit={openEditForm}
+              onToggleAvailability={handleAvailabilityChange}
+              onDelete={handleDeleteItem}
+            />
           </div>
         </section>
       </main>

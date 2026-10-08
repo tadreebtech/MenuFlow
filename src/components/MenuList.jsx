@@ -1,6 +1,6 @@
 import MenuItemCard from './MenuItemCard.jsx'
 
-function MenuList({ items, onEdit }) {
+function MenuList({ items, onEdit, onToggleAvailability, onDelete }) {
   if (items.length === 0) {
     return (
       <p className="menu-empty-state">
@@ -13,7 +13,12 @@ function MenuList({ items, onEdit }) {
     <ul className="menu-list">
       {items.map((item) => (
         <li key={item.id}>
-          <MenuItemCard item={item} onEdit={onEdit} />
+          <MenuItemCard
+            item={item}
+            onEdit={onEdit}
+            onToggleAvailability={onToggleAvailability}
+            onDelete={onDelete}
+          />
         </li>
       ))}
     </ul>
