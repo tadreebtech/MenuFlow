@@ -1,9 +1,24 @@
+import { useState } from 'react'
 import './App.css'
 import MenuList from './components/MenuList.jsx'
 import menuItems from './data/menuItems.js'
 
 function App() {
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('All')
+
   const availableItemCount = menuItems.filter((item) => item.available).length
+  const categories = [...new Set(menuItems.map((item) => item.category))]
+  const normalizedSearchQuery = searchQuery.trim().toLowerCase()
+  const visibleItems = menuItems.filter((item) => {
+    const matchesSearch =
+      item.name.toLowerCase().includes(normalizedSearchQuery) ||
+      item.description.toLowerCase().includes(normalizedSearchQuery)
+    const matchesCategory =
+      selectedCategory === 'All' || item.category === selectedCategory
+
+    return matchesSearch && matchesCategory
+  })
   const summaryItems = [
     { label: 'Menu items', value: menuItems.length },
     { label: 'Available items', value: availableItemCount },
@@ -48,11 +63,36 @@ function App() {
               <p className="toolbar-kicker">Menu workspace</p>
               <h2 id="workspace-title">Menu items</h2>
             </div>
-            <p className="toolbar-placeholder">Workspace tools will appear here</p>
+            <div className="toolbar-controls">
+              <label className="filter-control search-control">
+                <span>Search menu</span>
+                <input
+                  type="search"
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  placeholder="Search by name or description"
+                />
+              </label>
+
+              <label className="filter-control category-control">
+                <span>Category</span>
+                <select
+                  value={selectedCategory}
+                  onChange={(event) => setSelectedCategory(event.target.value)}
+                >
+                  <option value="All">All</option>
+                  {categories.map((category) => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
           </header>
 
           <div className="content-panel">
-            <MenuList items={menuItems} />
+            <MenuList items={visibleItems} />
           </div>
         </section>
       </main>
