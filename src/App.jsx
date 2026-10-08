@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import './App.css'
+import CustomerMenuPreview from './components/CustomerMenuPreview.jsx'
 import MenuItemForm from './components/MenuItemForm.jsx'
 import MenuList from './components/MenuList.jsx'
 import initialMenuItems from './data/menuItems.js'
@@ -21,6 +22,7 @@ function App() {
   const [feedback, setFeedback] = useState('')
   const [isCategoryMenuOpen, setIsCategoryMenuOpen] = useState(false)
   const [activeCategoryIndex, setActiveCategoryIndex] = useState(0)
+  const [activeView, setActiveView] = useState('manager')
   const formTriggerRef = useRef(null)
   const categoryControlRef = useRef(null)
   const categoryTriggerRef = useRef(null)
@@ -228,30 +230,53 @@ function App() {
             </span>
             <span>MenuFlow</span>
           </a>
-          <span className="header-label">Menu management</span>
+          <nav className="view-switcher" aria-label="Application view">
+            <button
+              className={`view-switcher-button ${
+                activeView === 'manager' ? 'is-active' : ''
+              }`}
+              type="button"
+              aria-current={activeView === 'manager' ? 'page' : undefined}
+              onClick={() => setActiveView('manager')}
+            >
+              Manage menu
+            </button>
+            <button
+              className={`view-switcher-button ${
+                activeView === 'customer' ? 'is-active' : ''
+              }`}
+              type="button"
+              aria-current={activeView === 'customer' ? 'page' : undefined}
+              onClick={() => setActiveView('customer')}
+            >
+              Customer preview
+            </button>
+          </nav>
         </div>
       </header>
 
       <main className="container page-content">
-        <section className="page-intro" aria-labelledby="page-title">
-          <p className="eyebrow">Workspace</p>
-          <h1 id="page-title">Your menu, clearly organized</h1>
-          <p className="intro-copy">
-            Keep menu information in one dependable workspace built for quick,
-            confident updates.
-          </p>
-        </section>
+        {activeView === 'manager' ? (
+          <>
+            <section className="page-intro" aria-labelledby="page-title">
+              <p className="eyebrow">Workspace</p>
+              <h1 id="page-title">Your menu, clearly organized</h1>
+              <p className="intro-copy">
+                Keep menu information in one dependable workspace built for
+                quick, confident updates.
+              </p>
+            </section>
 
-        <section className="summary-grid" aria-label="Menu summary">
-          {summaryItems.map((item) => (
-            <article className="summary-card" key={item.label}>
-              <p>{item.label}</p>
-              <strong>{item.value}</strong>
-            </article>
-          ))}
-        </section>
+            <section className="summary-grid" aria-label="Menu summary">
+              {summaryItems.map((item) => (
+                <article className="summary-card" key={item.label}>
+                  <p>{item.label}</p>
+                  <strong>{item.value}</strong>
+                </article>
+              ))}
+            </section>
 
-        <section className="workspace" aria-labelledby="workspace-title">
+            <section className="workspace" aria-labelledby="workspace-title">
           <header className="toolbar">
             <div>
               <p className="toolbar-kicker">Menu workspace</p>
@@ -368,7 +393,11 @@ function App() {
               onDelete={handleDeleteItem}
             />
           </div>
-        </section>
+            </section>
+          </>
+        ) : (
+          <CustomerMenuPreview items={menuItems} />
+        )}
       </main>
 
       <footer className="app-footer">
