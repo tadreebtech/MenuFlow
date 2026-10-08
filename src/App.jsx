@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import './App.css'
 import MenuItemForm from './components/MenuItemForm.jsx'
 import MenuList from './components/MenuList.jsx'
@@ -19,7 +19,12 @@ function App() {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingItemId, setEditingItemId] = useState(null)
   const [feedback, setFeedback] = useState('')
+  const [isCategoryMenuOpen, setIsCategoryMenuOpen] = useState(false)
+  const [activeCategoryIndex, setActiveCategoryIndex] = useState(0)
   const formTriggerRef = useRef(null)
+  const categoryControlRef = useRef(null)
+  const categoryTriggerRef = useRef(null)
+  const categoryOptionRefs = useRef([])
 
   const editingItem =
     menuItems.find((item) => item.id === editingItemId) ?? null
@@ -30,6 +35,7 @@ function App() {
     selectedCategory !== 'All' && !itemCategories.includes(selectedCategory)
       ? [...itemCategories, selectedCategory]
       : itemCategories
+  const categoryOptions = ['All', ...categories]
   const normalizedSearchQuery = searchQuery.trim().toLowerCase()
   const visibleItems = menuItems.filter((item) => {
     const matchesSearch =
@@ -48,6 +54,91 @@ function App() {
     menuItems.length === 0
       ? 'Your menu is empty. Add an item to get started.'
       : 'No menu items match the current search and category filters.'
+
+  useEffect(() => {
+    if (!isCategoryMenuOpen) {
+      return undefined
+    }
+
+    const handlePointerDown = (event) => {
+      if (!categoryControlRef.current?.contains(event.target)) {
+        setIsCategoryMenuOpen(false)
+      }
+    }
+
+    document.addEventListener('pointerdown', handlePointerDown)
+
+    return () => document.removeEventListener('pointerdown', handlePointerDown)
+  }, [isCategoryMenuOpen])
+
+  useEffect(() => {
+    if (isCategoryMenuOpen) {
+      categoryOptionRefs.current[activeCategoryIndex]?.focus()
+    }
+  }, [activeCategoryIndex, isCategoryMenuOpen])
+
+  const openCategoryMenu = () => {
+    const selectedIndex = categoryOptions.indexOf(selectedCategory)
+    setActiveCategoryIndex(Math.max(0, selectedIndex))
+    setIsCategoryMenuOpen(true)
+  }
+
+  const closeCategoryMenu = ({ restoreFocus = false } = {}) => {
+    setIsCategoryMenuOpen(false)
+
+    if (restoreFocus) {
+      requestAnimationFrame(() => categoryTriggerRef.current?.focus())
+    }
+  }
+
+  const selectCategory = (category) => {
+    setSelectedCategory(category)
+    closeCategoryMenu({ restoreFocus: true })
+  }
+
+  const handleCategoryTriggerKeyDown = (event) => {
+    if (['ArrowDown', 'ArrowUp', 'Enter', ' '].includes(event.key)) {
+      event.preventDefault()
+      openCategoryMenu()
+    }
+  }
+
+  const handleCategoryOptionKeyDown = (event, optionIndex) => {
+    if (event.key === 'Escape') {
+      event.preventDefault()
+      closeCategoryMenu({ restoreFocus: true })
+      return
+    }
+
+    if (event.key === 'Tab') {
+      closeCategoryMenu()
+      return
+    }
+
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      selectCategory(categoryOptions[optionIndex])
+      return
+    }
+
+    let nextIndex
+
+    if (event.key === 'ArrowDown') {
+      nextIndex = (optionIndex + 1) % categoryOptions.length
+    } else if (event.key === 'ArrowUp') {
+      nextIndex =
+        (optionIndex - 1 + categoryOptions.length) % categoryOptions.length
+    } else if (event.key === 'Home') {
+      nextIndex = 0
+    } else if (event.key === 'End') {
+      nextIndex = categoryOptions.length - 1
+    } else {
+      return
+    }
+
+    event.preventDefault()
+    setActiveCategoryIndex(nextIndex)
+  }
 
   const openAddForm = (trigger) => {
     formTriggerRef.current = trigger
@@ -207,20 +298,64 @@ function App() {
                 />
               </label>
 
-              <label className="filter-control category-control">
-                <span>Category</span>
-                <select
-                  value={selectedCategory}
-                  onChange={(event) => setSelectedCategory(event.target.value)}
+              <div
+                className="filter-control category-control"
+                ref={categoryControlRef}
+              >
+                <span id="category-filter-label">Category</span>
+                <button
+                  className="category-trigger"
+                  ref={categoryTriggerRef}
+                  type="button"
+                  aria-haspopup="listbox"
+                  aria-expanded={isCategoryMenuOpen}
+                  aria-controls="category-filter-options"
+                  aria-labelledby="category-filter-label category-filter-value"
+                  onClick={() =>
+                    isCategoryMenuOpen
+                      ? closeCategoryMenu()
+                      : openCategoryMenu()
+                  }
+                  onKeyDown={handleCategoryTriggerKeyDown}
                 >
-                  <option value="All">All</option>
-                  {categories.map((category) => (
-                    <option key={category} value={category}>
-                      {category}
-                    </option>
-                  ))}
-                </select>
-              </label>
+                  <span id="category-filter-value">{selectedCategory}</span>
+                  <span className="category-trigger-icon" aria-hidden="true" />
+                </button>
+
+                {isCategoryMenuOpen && (
+                  <div
+                    className="category-options"
+                    id="category-filter-options"
+                    role="listbox"
+                    aria-labelledby="category-filter-label"
+                  >
+                    {categoryOptions.map((category, optionIndex) => (
+                      <button
+                        className="category-option"
+                        key={category}
+                        ref={(element) => {
+                          categoryOptionRefs.current[optionIndex] = element
+                        }}
+                        type="button"
+                        role="option"
+                        aria-selected={selectedCategory === category}
+                        tabIndex={activeCategoryIndex === optionIndex ? 0 : -1}
+                        onClick={() => selectCategory(category)}
+                        onKeyDown={(event) =>
+                          handleCategoryOptionKeyDown(event, optionIndex)
+                        }
+                      >
+                        <span>{category}</span>
+                        {selectedCategory === category && (
+                          <span className="category-option-check" aria-hidden="true">
+                            ✓
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
